@@ -1,0 +1,8 @@
+package com.edgeapi.service.fastporteiot.domain.model.valueobjects;
+
+import jakarta.persistence.Embeddable;
+
+@Embeddable
+public record ThresholdState (double temperatureThreshold, double humidityThreshold) {
+    
+}

@@ -1,0 +1,33 @@
+package com.edgeapi.service.fastporteiot.application.internal.eventhandlers;
+
+import com.edgeapi.service.fastporteiot.domain.model.events.ThresholdExceededEvent;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+
+
+@Service
+@Slf4j
+public class ThresholdExceededEventHandler {
+    private static final Logger logger = LoggerFactory.getLogger(ThresholdExceededEventHandler.class);
+
+    @EventListener
+    public void handle(ThresholdExceededEvent event) {
+        log.warn("Threshold exceeded for device {} at {}",
+                event.getMacAddress(),
+                Instant.now());
+        log.warn("Sensor type: {}, Current value: {}, Threshold: {}",
+                event.getThresholdType(),
+                event.getReading().getValueForType(event.getThresholdType()),
+                event.getThresholdValue());
+
+        /* Aquí se va a poder implementar lógica adicional como:
+             - Activar alarmas
+             - Enviar alerta al Cloud API
+         */
+    }
+}

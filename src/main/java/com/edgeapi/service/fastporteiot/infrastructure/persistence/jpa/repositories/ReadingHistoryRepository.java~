@@ -1,0 +1,10 @@
+package com.edgeapi.service.fastporteiot.infrastructure.persistence.jpa.repositories;
+
+import com.edgeapi.service.fastporteiot.domain.model.entities.ReadingHistory;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface ReadingHistoryRepository extends JpaRepository<ReadingHistory, Long> {
+
+}

@@ -1,0 +1,4 @@
+package com.edgeapi.service.fastporteiot.domain.exceptions;
+
+public class DeviceConnectionException extends RuntimeException{
+}
