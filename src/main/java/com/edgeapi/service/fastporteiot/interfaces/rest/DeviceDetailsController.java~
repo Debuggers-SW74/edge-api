@@ -280,7 +280,7 @@ public class DeviceDetailsController {
         String macAddress = getMacAddressFromToken(request);
         logger.info("Retrieving events for device {}", macAddress);
 
-        // Filtrar eventos por macAddress
+        // Filtrar eventos por macAddress si es necesario
         List<DeviceEvent> filteredEvents = eventStore.stream()
                 .filter(event -> event.getMacAddress().equals(macAddress))
                 .toList();
