@@ -6,9 +6,9 @@ import jakarta.persistence.Embeddable;
 public record SensorReading(float temperature, float humidity, float pressure) {
     public float getValueForType(String sensorType) {
         return switch (sensorType.toUpperCase()) {
-            case "SENSOR_TEMPERATURE" -> temperature;
-            case "SENSOR_HUMIDITY" -> humidity;
-            case "SENSOR_PRESSURE" -> pressure;
+            case "TEMPERATURE" -> temperature;
+            case "HUMIDITY" -> humidity;
+            case "PRESSURE" -> pressure;
             default -> throw new IllegalArgumentException("Unknown sensor type: " + sensorType);
         };
     }

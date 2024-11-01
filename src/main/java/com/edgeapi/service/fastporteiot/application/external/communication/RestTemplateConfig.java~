@@ -1,12 +1,42 @@
 package com.edgeapi.service.fastporteiot.application.external.communication;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpRequest;
+import org.springframework.http.client.*;
+import org.springframework.web.client.RestTemplate;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+
 
 @Configuration
 public class RestTemplateConfig {
     @Bean
     public RestTemplate restTemplate() {
-        return new RestTemplate();
+        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
+        factory.setConnectTimeout(5000);
+        factory.setRe(5000);
+
+        RestTemplate restTemplate = new RestTemplate(factory);
+
+        // Agregamos un interceptor para logging detallado
+        restTemplate.setInterceptors(Collections.singletonList((request, body, execution) -> {
+            log.debug("Making request to: {} {}", request.getMethod(), request.getURI());
+            log.debug("Request headers: {}", request.getHeaders());
+            log.debug("Request body: {}", new String(body, StandardCharsets.UTF_8));
+
+            ClientHttpResponse response = execution.execute(request, body);
+
+            log.debug("Got response: {}", response.getStatusCode());
+            log.debug("Response headers: {}", response.getHeaders());
+
+            return response;
+        }));
+
+        return restTemplate;
     }
 }

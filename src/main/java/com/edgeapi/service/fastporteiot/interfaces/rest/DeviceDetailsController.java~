@@ -220,7 +220,7 @@ public class DeviceDetailsController {
     @Operation(summary = "Publish device event")
     @ApiResponse(responseCode = "200", description = "Event published successfully")
     @ApiResponse(responseCode = "400", description = "Invalid event data")
-    public ResponseEntity<DeviceEventResource> publishDeviceEvent(
+    public ResponseEntity<Void> publishDeviceEvent(
             HttpServletRequest request,
             @Valid @RequestBody DeviceEventPublishResource eventPublish) {
         String macAddress = getMacAddressFromToken(request);
@@ -256,19 +256,19 @@ public class DeviceDetailsController {
             );
             eventPublisher.publishEvent(thresholdEvent);
 
-
             // Enviar alerta al Cloud API
             CreateAlertCommand alertCommand = new CreateAlertCommand(
                     event.sensorType(),
                     (double) event.currentValue(),
                     LocalDateTime.now(),
-                    /* tripId */ 1L //obtener el tripId de alguna manera
+                    1L
             );
+            logger.info("Sending alert command: {}", alertCommand);
             cloudAlertService.sendAlert(alertCommand);
 
-            return ResponseEntity.ok(event);
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
-            logger.error("Error processing event for device {}: {}", macAddress, e.getMessage());
+            logger.error("Error processing event for device {}: {}", macAddress, e);
             throw e;
         }
     }
@@ -280,7 +280,7 @@ public class DeviceDetailsController {
         String macAddress = getMacAddressFromToken(request);
         logger.info("Retrieving events for device {}", macAddress);
 
-        // Filtrar eventos por macAddress si es necesario
+        // Filtrar eventos por macAddress
         List<DeviceEvent> filteredEvents = eventStore.stream()
                 .filter(event -> event.getMacAddress().equals(macAddress))
                 .toList();

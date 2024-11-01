@@ -31,3 +31,6 @@ secret:
 iot:
   cloud:
     api-url: ${CLOUD_API_URL}
+
+internal:
+  api-key: ${INTERNAL_API_KEY}
