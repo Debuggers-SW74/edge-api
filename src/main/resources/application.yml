@@ -26,8 +26,12 @@ app:
     expiration: ${JWT_EXPIRATION}
 
 secret:
+<<<<<<< HEAD
   key: ${SECRET_KEY}
 
 cloud:
   api:
     url: ${CLOUD_API_URL}
+=======
+  key: ${SECRET_KEY}
+>>>>>>> 1fd4cfa46acf19023d725116856a61f8bee84861
