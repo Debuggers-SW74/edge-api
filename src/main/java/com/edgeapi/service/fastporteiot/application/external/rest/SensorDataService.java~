@@ -1,0 +1,47 @@
+package com.edgeapi.service.fastporteiot.application.external.rest;
+
+import com.edgeapi.service.fastporteiot.domain.model.valueobjects.SensorReading;
+import lombok.Value;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.time.ZoneId;
+
+@Service
+public class SensorDataService {
+    private final RestTemplate restTemplate;
+
+    @Value("${cloud.api.url}")
+    private String cloudApiUrl;
+
+    @Autowired
+    public SensorDataService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
+    public void sendSensorData(SensorReading reading, String macAddress, Long tripId) {
+        String sensorType = "TEMPERATURE";
+        CreateAlertCommand command = new CreateAlertCommand(
+                sensorType,
+                reading.temperature(),
+                Instant.now().atZone(ZoneId.systemDefault()).toLocalDateTime(),
+                tripId
+        );
+
+        ResponseEntity<Void> response = restTemplate.postForEntity(
+                cloudApiUrl + "/api/alerts",
+                command,
+                Void.class
+        );
+
+        if (response.getStatusCode() == HttpStatus.CREATED) {
+            // Manejar éxito
+            System.out.println("Sensor data sent successfully");
+        } else {
+            // Manejar error
+            System.out.println("Failed to send sensor data: " + response.getStatusCode());
+        }
+    }
+}

@@ -1,0 +1,14 @@
+package com.edgeapi.service.fastporteiot.interfaces.rest.transform;
+
+import com.edgeapi.service.fastporteiot.domain.model.aggregates.DeviceDetails;
+import com.edgeapi.service.fastporteiot.interfaces.rest.resources.DeviceDetailsResource;
+
+public class DeviceResourceFromEntityAssembler {
+    public static DeviceDetailsResource toResourceFromEntity(DeviceDetails deviceDetails) {
+        return new DeviceResource(
+                deviceDetails.getMacAddress(),
+                deviceDetails.getCurrentReading(),
+                deviceDetails.getThresholdSettings()
+        );
+    }
+}

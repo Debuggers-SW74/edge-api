@@ -1,0 +1,4 @@
+package com.edgeapi.service.iam.domain.model.commands;
+
+public record SignInCommand(String deviceId, String secret) {
+}
