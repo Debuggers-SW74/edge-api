@@ -1,6 +1,8 @@
 package com.edgeapi.service.fastporteiot.interfaces.rest;
 
+import com.edgeapi.service.fastporteiot.application.external.rest.CloudAlertService;
 import com.edgeapi.service.fastporteiot.domain.exceptions.DeviceNotFoundException;
+import com.edgeapi.service.fastporteiot.domain.model.commands.CreateAlertCommand;
 import com.edgeapi.service.fastporteiot.domain.model.commands.UpdateDeviceDetailsHealthCommand;
 import com.edgeapi.service.fastporteiot.domain.model.commands.UpdateDeviceDetailsReadingCommand;
 import com.edgeapi.service.fastporteiot.domain.model.commands.UpdateDeviceDetailsThresholdsCommand;
@@ -32,6 +34,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 
 import org.slf4j.Logger;
@@ -44,18 +47,20 @@ import org.springframework.web.server.ResponseStatusException;
 public class DeviceDetailsController {
     private final DeviceDetailsCommandService deviceDetailsCommandService;
     private final DeviceDetailsQueryService deviceDetailsQueryService;
-    private final ApplicationEventPublisher eventPublisher;
     private final BearerTokenService tokenService;
     private static final Logger logger = LoggerFactory.getLogger(DeviceDetailsController.class);
     private final DeviceDetailsRepository deviceDetailsRepository;
+    private final ApplicationEventPublisher eventPublisher;
+    private final CloudAlertService cloudAlertService;
 
     @Autowired
-    public DeviceDetailsController(DeviceDetailsCommandService deviceDetailsCommandService, DeviceDetailsQueryService deviceDetailsQueryService, ApplicationEventPublisher eventPublisher, BearerTokenService tokenService, DeviceDetailsRepository deviceDetailsRepository) {
+    public DeviceDetailsController(DeviceDetailsCommandService deviceDetailsCommandService, DeviceDetailsQueryService deviceDetailsQueryService, ApplicationEventPublisher eventPublisher, BearerTokenService tokenService, DeviceDetailsRepository deviceDetailsRepository, CloudAlertService cloudAlertService) {
         this.deviceDetailsCommandService = deviceDetailsCommandService;
         this.deviceDetailsQueryService = deviceDetailsQueryService;
         this.eventPublisher = eventPublisher;
         this.tokenService = tokenService;
         this.deviceDetailsRepository = deviceDetailsRepository;
+        this.cloudAlertService = cloudAlertService;
     }
 
     private String getMacAddressFromToken(HttpServletRequest request) {
@@ -231,11 +236,21 @@ public class DeviceDetailsController {
             var thresholdEvent = new ThresholdExceededEvent(
                     this,
                     macAddress,
-                    new SensorReading(event.currentValue(), 0, 0), // Asumimos que el valor actual es para el sensor específico
+                    new SensorReading(event.currentValue(), 0, 0),
                     event.sensorType(),
                     event.thresholdValue()
             );
             eventPublisher.publishEvent(thresholdEvent);
+
+
+            // Enviar alerta al Cloud API
+            CreateAlertCommand alertCommand = new CreateAlertCommand(
+                    event.sensorType(),
+                    (double) event.currentValue(),
+                    LocalDateTime.now(),
+                    /* tripId */ 1L //obtener el tripId de alguna manera
+            );
+            cloudAlertService.sendAlert(alertCommand);
 
             return ResponseEntity.ok(event);
         } catch (Exception e) {
