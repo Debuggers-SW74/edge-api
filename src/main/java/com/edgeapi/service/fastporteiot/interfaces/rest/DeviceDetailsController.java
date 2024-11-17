@@ -102,6 +102,15 @@ public class DeviceDetailsController {
         return ResponseEntity.ok(DeviceStateResource.fromDeviceDetails(updatedDeviceDetails));
     }
 
+    @PostMapping("/state/debug")
+    public ResponseEntity<String> debugUpdateDeviceState(
+            HttpServletRequest request,
+            @RequestBody SensorReading reading) {
+        String macAddress = getMacAddressFromToken(request);
+        logger.info("Debug: Received state update for device {}: {}", macAddress, reading);
+        return ResponseEntity.ok("Received successfully");
+    }
+
     @GetMapping("/health")
     public ResponseEntity<DeviceHealthResource> getDeviceHealth(HttpServletRequest request) {
         String macAddress = getMacAddressFromToken(request);
