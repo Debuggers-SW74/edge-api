@@ -92,7 +92,7 @@ public class DeviceDetailsController {
     @PostMapping("/state")
     public ResponseEntity<DeviceStateResource> updateDeviceState(
             HttpServletRequest request,
-            @RequestBody SensorReading reading) {
+            @Valid @RequestBody SensorReading reading) {
         String macAddress = getMacAddressFromToken(request);
         logger.info("Received state update for device {}: {}", macAddress, reading);
 
