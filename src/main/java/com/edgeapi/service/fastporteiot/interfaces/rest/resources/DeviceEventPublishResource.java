@@ -4,6 +4,7 @@ public record DeviceEventPublishResource(
         String eventType,
         String sensorType,
         float currentValue,
-        float thresholdValue
+        float thresholdValue,
+        Integer tripId
 ) {
 }

@@ -1,4 +1,5 @@
 package com.edgeapi.service.fastporteiot.interfaces.rest.resources;
 
-public record DeviceEventPublishResource() {
-}
+public record TripDetailsResource(
+
+) { }

@@ -1,14 +1,13 @@
 package com.edgeapi.service.fastporteiot.application.internal.commandservices;
 
+import com.edgeapi.service.fastporteiot.application.external.rest.CloudThresholdService;
 import com.edgeapi.service.fastporteiot.domain.exceptions.DeviceNotFoundException;
 import com.edgeapi.service.fastporteiot.domain.model.aggregates.DeviceDetails;
 import com.edgeapi.service.fastporteiot.domain.model.commands.RegisterDeviceDetailsCommand;
 import com.edgeapi.service.fastporteiot.domain.model.commands.UpdateDeviceDetailsHealthCommand;
 import com.edgeapi.service.fastporteiot.domain.model.commands.UpdateDeviceDetailsReadingCommand;
-import com.edgeapi.service.fastporteiot.domain.model.commands.UpdateDeviceDetailsThresholdsCommand;
 import com.edgeapi.service.fastporteiot.domain.model.entities.ReadingHistory;
-import com.edgeapi.service.fastporteiot.domain.model.events.ThresholdExceededEvent;
-import com.edgeapi.service.fastporteiot.domain.model.valueobjects.SensorReading;
+import com.edgeapi.service.fastporteiot.domain.model.entities.ThresholdManager;
 import com.edgeapi.service.fastporteiot.domain.model.valueobjects.ThresholdSettings;
 import com.edgeapi.service.fastporteiot.domain.services.DeviceDetailsCommandService;
 import com.edgeapi.service.fastporteiot.infrastructure.persistence.jpa.repositories.DeviceDetailsRepository;
@@ -20,6 +19,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 
 @Service
 public class DeviceDetailsCommandServiceImpl implements DeviceDetailsCommandService {
@@ -27,17 +27,19 @@ public class DeviceDetailsCommandServiceImpl implements DeviceDetailsCommandServ
     private final ReadingHistoryRepository readingHistoryRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final DeviceRepository deviceRepository;
+    private final CloudThresholdService cloudThresholdService;
 
     @Autowired
     public DeviceDetailsCommandServiceImpl(
             DeviceDetailsRepository deviceDetailsRepository,
             ReadingHistoryRepository readingHistoryRepository,
-            ApplicationEventPublisher eventPublisher, DeviceRepository deviceRepository
+            ApplicationEventPublisher eventPublisher, DeviceRepository deviceRepository, CloudThresholdService cloudThresholdService
     ) {
         this.deviceDetailsRepository = deviceDetailsRepository;
         this.readingHistoryRepository = readingHistoryRepository;
         this.eventPublisher = eventPublisher;
         this.deviceRepository = deviceRepository;
+        this.cloudThresholdService = cloudThresholdService;
     }
 
     @Override
@@ -59,13 +61,12 @@ public class DeviceDetailsCommandServiceImpl implements DeviceDetailsCommandServ
                 .findByMacAddress(command.macAddress())
                 .orElseGet(() -> new DeviceDetails(
                         command.macAddress(),
-                        new ThresholdSettings(
-                                40.0f,
-                                60.0f,
-                                100.0f,
-                                50.0f
-                        )
+                        new ThresholdSettings(0, 0, 0, 0)
                 ));
+
+        List<ThresholdManager> thresholds = cloudThresholdService.getThresholdsByTripId(command.tripId());
+        ThresholdSettings newThresholdSettings = transformToThresholdSettings(thresholds);
+        deviceDetails.updateThresholds(newThresholdSettings);
 
         ReadingHistory history = new ReadingHistory(
                 command.macAddress(),
@@ -78,9 +79,10 @@ public class DeviceDetailsCommandServiceImpl implements DeviceDetailsCommandServ
         return deviceDetailsRepository.save(deviceDetails);
     }
 
+    /*
     @Override
     public DeviceDetails handle(UpdateDeviceDetailsThresholdsCommand command) {
-        Device device = deviceRepository
+        Devices device = deviceRepository
                 .findByMacAddress(command.macAddress())
                 .orElseThrow(() -> new DeviceNotFoundException(command.macAddress()));
 
@@ -97,7 +99,7 @@ public class DeviceDetailsCommandServiceImpl implements DeviceDetailsCommandServ
                 ));
         deviceDetails.updateThresholds(command.thresholds());
         return deviceDetailsRepository.save(deviceDetails);
-    }
+    }*/
 
     @Override
     public DeviceDetails handle(UpdateDeviceDetailsHealthCommand command) {
@@ -105,5 +107,33 @@ public class DeviceDetailsCommandServiceImpl implements DeviceDetailsCommandServ
                 .orElseThrow(() -> new DeviceNotFoundException(command.macAddress()));
         deviceDetails.updateHealth(command.status(), Instant.now());
         return deviceDetailsRepository.save(deviceDetails);
+    }
+
+    private ThresholdSettings transformToThresholdSettings(List<ThresholdManager> thresholds) {
+        float maxTemperature = thresholds.stream()
+                .filter(threshold -> "SENSOR_TEMPERATURE".equals(threshold.getSensorType()))
+                .map(ThresholdManager::getMaxThreshold)
+                .findFirst()
+                .orElse(0f);
+
+        float maxHumidity = thresholds.stream()
+                .filter(threshold -> "SENSOR_HUMIDITY".equals(threshold.getSensorType()))
+                .map(ThresholdManager::getMaxThreshold)
+                .findFirst()
+                .orElse(0f);
+
+        float maxPressure = thresholds.stream()
+                .filter(threshold -> "SENSOR_PRESSURE".equals(threshold.getSensorType()))
+                .map(ThresholdManager::getMaxThreshold)
+                .findFirst()
+                .orElse(0f);
+
+        float maxGas = thresholds.stream()
+                .filter(threshold -> "SENSOR_GAS".equals(threshold.getSensorType()))
+                .map(ThresholdManager::getMaxThreshold)
+                .findFirst()
+                .orElse(0f);
+
+        return new ThresholdSettings(maxTemperature, maxHumidity, maxPressure, maxGas);
     }
 }

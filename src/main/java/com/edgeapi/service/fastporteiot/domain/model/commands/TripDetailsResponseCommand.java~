@@ -1,0 +1,8 @@
+package com.edgeapi.service.fastporteiot.domain.model.commands;
+
+public record TripDetailsResponseCommand(
+        Long tripId,
+        String driverName,
+        Long supervisorId,
+        String supervisorName
+) { }

@@ -10,7 +10,6 @@ import org.springframework.web.client.*;
 import org.springframework.http.HttpStatus;
 import java.time.format.DateTimeFormatter;
 
-
 @Slf4j
 @Component
 public class CloudAlertService {

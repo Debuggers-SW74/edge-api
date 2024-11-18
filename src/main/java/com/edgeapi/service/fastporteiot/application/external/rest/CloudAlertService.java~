@@ -42,7 +42,7 @@ public class CloudAlertService {
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("X-Internal-API-Key", internalApiKey);
 
-            String url = cloudApiUrl + "/api/alerts";
+            String url = cloudApiUrl + "/api/v1/alerts";
 
             log.info("Sending alert to {}", url);
             log.info("Alert data: {}", alertResource);

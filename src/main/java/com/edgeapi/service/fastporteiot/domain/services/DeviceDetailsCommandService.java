@@ -9,6 +9,6 @@ import com.edgeapi.service.fastporteiot.domain.model.commands.UpdateDeviceDetail
 public interface DeviceDetailsCommandService {
     DeviceDetails handle(RegisterDeviceDetailsCommand command);
     DeviceDetails handle(UpdateDeviceDetailsReadingCommand command);
-    DeviceDetails handle(UpdateDeviceDetailsThresholdsCommand command);
+    //DeviceDetails handle(UpdateDeviceDetailsThresholdsCommand command);
     DeviceDetails handle(UpdateDeviceDetailsHealthCommand command);
 }

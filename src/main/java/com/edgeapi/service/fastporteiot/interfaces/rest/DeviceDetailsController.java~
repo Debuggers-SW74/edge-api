@@ -14,6 +14,7 @@ import com.edgeapi.service.fastporteiot.domain.model.queries.GetDeviceDetailsQue
 import com.edgeapi.service.fastporteiot.domain.model.queries.GetDeviceDetailsReadingHistoryQuery;
 import com.edgeapi.service.fastporteiot.domain.model.valueobjects.DeviceStatus;
 import com.edgeapi.service.fastporteiot.domain.model.valueobjects.SensorReading;
+import com.edgeapi.service.fastporteiot.domain.model.valueobjects.ThresholdSettings;
 import com.edgeapi.service.fastporteiot.domain.services.DeviceDetailsCommandService;
 import com.edgeapi.service.fastporteiot.domain.services.DeviceDetailsQueryService;
 import com.edgeapi.service.fastporteiot.infrastructure.persistence.jpa.repositories.DeviceDetailsRepository;
@@ -21,6 +22,7 @@ import com.edgeapi.service.fastporteiot.interfaces.rest.resources.*;
 import com.edgeapi.service.fastporteiot.interfaces.rest.transform.DeviceStateResourceAssembler;
 import com.edgeapi.service.fastporteiot.interfaces.rest.transform.DeviceThresholdsResourceAssembler;
 import com.edgeapi.service.fastporteiot.interfaces.rest.transform.TripDetailsResourceAssembler;
+import com.edgeapi.service.fastporteiot.interfaces.rest.transform.UpdateDeviceDetailsReadingCommandFromResourceAssembler;
 import com.edgeapi.service.iam.infrastructure.tokens.jwt.BearerTokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
