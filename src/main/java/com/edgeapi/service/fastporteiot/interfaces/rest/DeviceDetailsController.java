@@ -89,8 +89,8 @@ public class DeviceDetailsController {
     @GetMapping("/state")
     public ResponseEntity<DeviceStateResource> getDeviceState(HttpServletRequest request) {
         String macAddress = getMacAddressFromToken(request);
-        var query = new GetDeviceDetailsQuery(macAddress);
-        var deviceDetails = deviceDetailsQueryService.handle(query)
+        var deviceDetails = deviceDetailsRepository
+                .findByMacAddress(macAddress)
                 .orElseThrow(() -> new DeviceNotFoundException(macAddress));
 
         return ResponseEntity.ok(DeviceStateResourceAssembler.toResource(deviceDetails));
@@ -116,8 +116,8 @@ public class DeviceDetailsController {
     @GetMapping("/health")
     public ResponseEntity<DeviceHealthResource> getDeviceHealth(HttpServletRequest request) {
         String macAddress = getMacAddressFromToken(request);
-        var query = new GetDeviceDetailsQuery(macAddress);
-        var deviceDetails = deviceDetailsQueryService.handle(query)
+        var deviceDetails = deviceDetailsRepository
+                .findByMacAddress(macAddress)
                 .orElseThrow(() -> new DeviceNotFoundException(macAddress));
 
         var health = new DeviceHealthResource(
@@ -178,8 +178,8 @@ public class DeviceDetailsController {
     @GetMapping("/thresholds/{tripId}")
     public ResponseEntity<DeviceThresholdsResource> getDeviceThresholds(HttpServletRequest request, @PathVariable Integer tripId) {
         String macAddress = getMacAddressFromToken(request);
-        var query = new GetDeviceDetailsQuery(macAddress);
-        var deviceDetails = deviceDetailsQueryService.handle(query)
+        var deviceDetails = deviceDetailsRepository
+                .findByMacAddress(macAddress)
                 .orElseThrow(() -> new DeviceNotFoundException(macAddress));
 
         List<ThresholdManager> thresholds = cloudThresholdService.getThresholdsByTripId(tripId);
