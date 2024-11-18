@@ -121,11 +121,7 @@ public class DeviceDetailsController {
     public ResponseEntity<DeviceHealthResource> getDeviceHealth(HttpServletRequest request) {
         String macAddress = getMacAddressFromToken(request);
         GetDeviceDetailsQuery query = new GetDeviceDetailsQuery(macAddress);
-        var deviceDetails = deviceDetailsQueryService.handle(query)
-                .orElseGet(() -> {
-                    RegisterDeviceDetailsCommand command = new RegisterDeviceDetailsCommand(macAddress, ThresholdSettings.defaultSettings());
-                    return deviceDetailsCommandService.handle(command);
-                });
+        DeviceDetails deviceDetails = deviceDetailsQueryService.handle(query).get();
         var health = new DeviceHealthResource(
                 macAddress,
                 deviceDetails.getStatus().toString(),
@@ -140,11 +136,7 @@ public class DeviceDetailsController {
             @RequestBody DeviceHealthUpdateResource healthUpdate) {
         String macAddress = getMacAddressFromToken(request);
         GetDeviceDetailsQuery query = new GetDeviceDetailsQuery(macAddress);
-        var deviceDetails = deviceDetailsQueryService.handle(query)
-                .orElseGet(() -> {
-                    RegisterDeviceDetailsCommand command = new RegisterDeviceDetailsCommand(macAddress, ThresholdSettings.defaultSettings());
-                    return deviceDetailsCommandService.handle(command);
-                });
+        DeviceDetails deviceDetails = deviceDetailsQueryService.handle(query).get();
         logger.info("Received health update for device {}: status={}", macAddress, healthUpdate.status());
 
         try {
@@ -187,11 +179,7 @@ public class DeviceDetailsController {
     public ResponseEntity<DeviceThresholdsResource> getDeviceThresholds(HttpServletRequest request, @RequestParam Integer tripId) {
         String macAddress = getMacAddressFromToken(request);
         GetDeviceDetailsQuery query = new GetDeviceDetailsQuery(macAddress);
-        var deviceDetails = deviceDetailsQueryService.handle(query)
-                .orElseGet(() -> {
-                    RegisterDeviceDetailsCommand command = new RegisterDeviceDetailsCommand(macAddress, ThresholdSettings.defaultSettings());
-                    return deviceDetailsCommandService.handle(command);
-                });
+        DeviceDetails deviceDetails = deviceDetailsQueryService.handle(query).get();
 
         List<ThresholdManager> thresholds = cloudThresholdService.getThresholdsByTripId(tripId);
         DeviceThresholdsResource resource = DeviceThresholdsResourceAssembler.toResource(deviceDetails, thresholds);
@@ -290,6 +278,8 @@ public class DeviceDetailsController {
     public ResponseEntity<List<DeviceEvent>> getDeviceEvents(HttpServletRequest request) {
         String macAddress = getMacAddressFromToken(request);
         logger.info("Retrieving events for device {}", macAddress);
+
+        // Filtrar eventos por macAddress
         List<DeviceEvent> filteredEvents = eventStore.stream()
                 .filter(event -> event.getMacAddress().equals(macAddress))
                 .toList();

@@ -53,15 +53,11 @@ public class DeviceDetailsCommandServiceImpl implements DeviceDetailsCommandServ
 
     @Override
     public DeviceDetails handle(UpdateDeviceDetailsReadingCommand command) {
-        Device device = deviceRepository
-                .findByMacAddress(command.macAddress())
-                .orElseThrow(() -> new DeviceNotFoundException(command.macAddress()));
-
         DeviceDetails deviceDetails = deviceDetailsRepository
                 .findByMacAddress(command.macAddress())
                 .orElseGet(() -> new DeviceDetails(
                         command.macAddress(),
-                        new ThresholdSettings(0f, 0f, 0f, 0f)
+                        new ThresholdSettings(40.0f, 60.0f, 100.0f, 50.0f)
                 ));
 
         List<ThresholdManager> thresholds = cloudThresholdService.getThresholdsByTripId(command.tripId());
