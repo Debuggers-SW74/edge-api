@@ -32,9 +32,12 @@ public class CloudTripService {
 
 
     public TripDetailsResponseCommand getTripDetails(GetTripDetailsCommand command) {
-        String url = cloudApiUrl + "/api/v1/trips/driver/" + command.driverId();
+
         HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("X-Internal-API-Key", internalApiKey);
+
+        String url = cloudApiUrl + "/api/v1/trips/driver/" + command.driverId();
 
         ResponseEntity<List<TripData>> response = restTemplate.exchange(
                 url,

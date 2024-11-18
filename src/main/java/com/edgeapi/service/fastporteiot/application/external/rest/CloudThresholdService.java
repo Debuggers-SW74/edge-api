@@ -33,6 +33,7 @@ public class CloudThresholdService {
         String url = cloudApiUrl + "/api/v1/thresholds/trip/" + tripId;
 
         HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("X-Internal-API-Key", internalApiKey);
         HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
 

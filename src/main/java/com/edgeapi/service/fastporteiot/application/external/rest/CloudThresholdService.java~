@@ -29,7 +29,7 @@ public class CloudThresholdService {
     }
 
 
-    public List<ThresholdManager> getThresholdsByTripId(Long tripId) {
+    public List<ThresholdManager> getThresholdsByTripId(Integer tripId) {
         String url = cloudApiUrl + "/api/v1/thresholds/trip/" + tripId;
 
         HttpHeaders headers = new HttpHeaders();
