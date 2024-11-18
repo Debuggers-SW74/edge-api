@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -100,15 +101,6 @@ public class DeviceDetailsController {
         var updatedDeviceDetails = deviceDetailsCommandService.handle(command);
 
         return ResponseEntity.ok(DeviceStateResource.fromDeviceDetails(updatedDeviceDetails));
-    }
-
-    @PostMapping("/state/debug")
-    public ResponseEntity<String> debugUpdateDeviceState(
-            HttpServletRequest request,
-            @RequestBody SensorReading reading) {
-        String macAddress = getMacAddressFromToken(request);
-        logger.info("Debug: Received state update for device {}: {}", macAddress, reading);
-        return ResponseEntity.ok("Received successfully");
     }
 
     @GetMapping("/health")
@@ -205,19 +197,18 @@ public class DeviceDetailsController {
     @ApiResponse(responseCode = "400", description = "Invalid date range")
     public ResponseEntity<DeviceDetailsReadingHistoryResource> getDeviceReadingHistory(
             HttpServletRequest request,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant startTime,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant endTime) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
 
         String macAddress = getMacAddressFromToken(request);
-        logger.info("Retrieving reading history for device {} from {} to {}", macAddress, startTime, endTime);
+        logger.info("Retrieving reading history for device {} from {} to {}", macAddress, startDate, endDate);
 
-        if (startTime.isAfter(endTime)) {
-            throw new IllegalArgumentException("Start time must be before end time");
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("Start date must be before end date");
         }
 
-        if (Duration.between(startTime, endTime).toDays() > 30) {
-            throw new IllegalArgumentException("Date range cannot exceed 30 days");
-        }
+        Instant startTime = startDate.toLocalDate().atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant endTime = endDate.toLocalDate().plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
 
         var query = new GetDeviceDetailsReadingHistoryQuery(macAddress, startTime, endTime);
         var history = deviceDetailsQueryService.handle(query);
@@ -256,14 +247,46 @@ public class DeviceDetailsController {
                     Instant.now())
             );
 
-            var thresholdEvent = new ThresholdExceededEvent(
-                    this,
-                    macAddress,
-                    new SensorReading(event.currentValue(), 0, 0),
-                    event.sensorType(),
-                    event.thresholdValue()
-            );
-            eventPublisher.publishEvent(thresholdEvent);
+            if (event.sensorType().equals("SENSOR_TEMPERATURE")) {
+                var thresholdEvent = new ThresholdExceededEvent(
+                        this,
+                        macAddress,
+                        new SensorReading(event.currentValue(), 0, 0, 0),
+                        event.sensorType(),
+                        event.thresholdValue()
+                );
+                eventPublisher.publishEvent(thresholdEvent);
+            }
+            else if (event.sensorType().equals("SENSOR_HUMIDITY")) {
+                var thresholdEvent = new ThresholdExceededEvent(
+                        this,
+                        macAddress,
+                        new SensorReading(0, event.currentValue(), 0, 0),
+                        event.sensorType(),
+                        event.thresholdValue()
+                );
+                eventPublisher.publishEvent(thresholdEvent);
+            }
+            else if (event.sensorType().equals("SENSOR_PRESSURE")) {
+                var thresholdEvent = new ThresholdExceededEvent(
+                        this,
+                        macAddress,
+                        new SensorReading(0, 0, event.currentValue(), 0),
+                        event.sensorType(),
+                        event.thresholdValue()
+                );
+                eventPublisher.publishEvent(thresholdEvent);
+            }
+            else if (event.sensorType().equals("SENSOR_GAS")) {
+                var thresholdEvent = new ThresholdExceededEvent(
+                        this,
+                        macAddress,
+                        new SensorReading(0, 0, 0, event.currentValue()),
+                        event.sensorType(),
+                        event.thresholdValue()
+                );
+                eventPublisher.publishEvent(thresholdEvent);
+            }
 
             CreateAlertCommand alertCommand = new CreateAlertCommand(
                     event.sensorType(),

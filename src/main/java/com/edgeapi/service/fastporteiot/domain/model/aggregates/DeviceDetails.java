@@ -47,6 +47,7 @@ public class DeviceDetails extends AuditableAbstractAggregateRoot<DeviceDetails>
 
     public void updateReading(SensorReading reading) {
         this.currentReading = reading;
+        this.status = determinateHealthStatus(reading);
         checkThresholds();
     }
 
@@ -85,5 +86,24 @@ public class DeviceDetails extends AuditableAbstractAggregateRoot<DeviceDetails>
                     thresholdSettings.maxPressure()
             ));
         }
+        if (currentReading.gas() > thresholdSettings.maxGas()) {
+            registerEvent(new ThresholdExceededEvent(
+                    this,
+                    macAddress,
+                    currentReading,
+                    "GAS",
+                    thresholdSettings.maxGas()
+            ));
+        }
+    }
+
+    public DeviceStatus determinateHealthStatus(SensorReading reading) {
+        if (reading.temperature() > thresholdSettings.maxTemperature() ||
+                reading.humidity() > thresholdSettings.maxHumidity() ||
+                reading.pressure() > thresholdSettings.maxPressure() ||
+                reading.gas() > thresholdSettings.maxGas()) {
+            return DeviceStatus.WARNING;
+        }
+        return DeviceStatus.HEALTHY;
     }
 }

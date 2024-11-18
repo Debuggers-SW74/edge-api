@@ -8,7 +8,8 @@ public class DeviceStateResourceAssembler {
         return new DeviceStateResource(
                 device.getCurrentReading().temperature(),
                 device.getCurrentReading().humidity(),
-                device.getCurrentReading().pressure()
+                device.getCurrentReading().pressure(),
+                device.getCurrentReading().gas()
         );
     }
 }

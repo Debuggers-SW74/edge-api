@@ -10,7 +10,7 @@ public record ThresholdSettings(
         float maxGas
 ) {
     public ThresholdSettings {
-        if (maxTemperature < 0 || maxHumidity < 0 || maxPressure < 0 || maxGas < 0) {
+        if (maxTemperature < 0 || maxHumidity < 0 || maxPressure < 0) {
             throw new IllegalArgumentException("Threshold values cannot be negative");
         }
     }

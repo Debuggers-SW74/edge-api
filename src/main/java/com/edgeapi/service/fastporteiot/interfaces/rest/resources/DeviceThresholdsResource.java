@@ -4,5 +4,6 @@ public record DeviceThresholdsResource(
         String macAddress,
         float temperatureMax,
         float humidityMax,
-        float pressureMax
+        float pressureMax,
+        float gasMax
 ) { }

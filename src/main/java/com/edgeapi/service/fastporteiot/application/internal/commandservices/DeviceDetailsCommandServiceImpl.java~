@@ -55,6 +55,8 @@ public class DeviceDetailsCommandServiceImpl implements DeviceDetailsCommandServ
                 .findByMacAddress(command.macAddress())
                 .orElseThrow(() -> new DeviceNotFoundException(command.macAddress()));
 
+        
+
         DeviceDetails deviceDetails = deviceDetailsRepository
                 .findByMacAddress(command.macAddress())
                 .orElseGet(() -> new DeviceDetails(
@@ -69,8 +71,7 @@ public class DeviceDetailsCommandServiceImpl implements DeviceDetailsCommandServ
 
         ReadingHistory history = new ReadingHistory(
                 command.macAddress(),
-                command.reading(),
-                deviceDetails
+                command.reading()
         );
         readingHistoryRepository.save(history);
 

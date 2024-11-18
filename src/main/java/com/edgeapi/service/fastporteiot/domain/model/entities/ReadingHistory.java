@@ -1,7 +1,9 @@
 package com.edgeapi.service.fastporteiot.domain.model.entities;
 
+import com.edgeapi.service.fastporteiot.domain.model.aggregates.DeviceDetails;
 import com.edgeapi.service.fastporteiot.domain.model.valueobjects.DeviceStatus;
 import com.edgeapi.service.fastporteiot.domain.model.valueobjects.SensorReading;
+import com.edgeapi.service.fastporteiot.domain.model.valueobjects.ThresholdSettings;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -36,7 +38,7 @@ public class ReadingHistory {
         this.timestamp = Instant.now();
     }
 
-    public ReadingHistory(String macAddress, SensorReading reading) {
-        this(macAddress, reading, DeviceStatus.HEALTHY);
+    public ReadingHistory(String macAddress, SensorReading reading, DeviceDetails deviceDetails) {
+        this(macAddress, reading, deviceDetails.determinateHealthStatus(reading));
     }
 }

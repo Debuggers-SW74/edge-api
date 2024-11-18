@@ -1,4 +1,0 @@
-package com.edgeapi.service.fastporteiot.interfaces.rest.transform;
-
-public class DeviceThresholdsResourceAssembler {
-}

@@ -9,7 +9,8 @@ public class DeviceThresholdsResourceAssembler {
                 device.getMacAddress(),
                 device.getThresholdSettings().maxTemperature(),
                 device.getThresholdSettings().maxHumidity(),
-                device.getThresholdSettings().maxPressure()
+                device.getThresholdSettings().maxPressure(),
+                device.getThresholdSettings().maxGas()
         );
     }
 }
