@@ -5,7 +5,6 @@ import com.edgeapi.service.fastporteiot.application.external.rest.CloudRealTimeS
 import com.edgeapi.service.fastporteiot.application.external.rest.CloudThresholdService;
 import com.edgeapi.service.fastporteiot.application.external.rest.CloudTripService;
 import com.edgeapi.service.fastporteiot.domain.exceptions.DeviceNotFoundException;
-import com.edgeapi.service.fastporteiot.domain.model.aggregates.DeviceDetails;
 import com.edgeapi.service.fastporteiot.domain.model.commands.*;
 import com.edgeapi.service.fastporteiot.domain.model.entities.DeviceEvent;
 import com.edgeapi.service.fastporteiot.domain.model.entities.RealTimeSensorData;
@@ -89,8 +88,10 @@ public class DeviceDetailsController {
     @GetMapping("/state")
     public ResponseEntity<DeviceStateResource> getDeviceState(HttpServletRequest request) {
         String macAddress = getMacAddressFromToken(request);
-        GetDeviceDetailsQuery query = new GetDeviceDetailsQuery(macAddress);
-        DeviceDetails deviceDetails = deviceDetailsQueryService.handle(query).get();
+        var deviceDetails = deviceDetailsRepository
+                .findByMacAddress(macAddress)
+                .orElseThrow(() -> new DeviceNotFoundException(macAddress));
+
         return ResponseEntity.ok(DeviceStateResourceAssembler.toResource(deviceDetails));
     }
 
@@ -100,12 +101,8 @@ public class DeviceDetailsController {
     @PostMapping("/state")
     public ResponseEntity<DeviceStateResource> updateDeviceState(
             HttpServletRequest request,
-            @RequestBody SensorReading reading,
-            @RequestParam Integer tripId
-    ) {
+            @RequestBody SensorReading reading, @RequestParam Integer tripId) {
         String macAddress = getMacAddressFromToken(request);
-        GetDeviceDetailsQuery query = new GetDeviceDetailsQuery(macAddress);
-        DeviceDetails deviceDetails = deviceDetailsQueryService.handle(query).get();
         logger.info("Received state update for device {}: {}", macAddress, reading);
 
         var command = new UpdateDeviceDetailsReadingCommand(macAddress, reading, tripId);
@@ -118,8 +115,10 @@ public class DeviceDetailsController {
     @GetMapping("/health")
     public ResponseEntity<DeviceHealthResource> getDeviceHealth(HttpServletRequest request) {
         String macAddress = getMacAddressFromToken(request);
-        GetDeviceDetailsQuery query = new GetDeviceDetailsQuery(macAddress);
-        DeviceDetails deviceDetails = deviceDetailsQueryService.handle(query).get();
+        var deviceDetails = deviceDetailsRepository
+                .findByMacAddress(macAddress)
+                .orElseThrow(() -> new DeviceNotFoundException(macAddress));
+
         var health = new DeviceHealthResource(
                 macAddress,
                 deviceDetails.getStatus().toString(),
@@ -133,12 +132,14 @@ public class DeviceDetailsController {
             HttpServletRequest request,
             @RequestBody DeviceHealthUpdateResource healthUpdate) {
         String macAddress = getMacAddressFromToken(request);
-        GetDeviceDetailsQuery query = new GetDeviceDetailsQuery(macAddress);
-        DeviceDetails deviceDetails = deviceDetailsQueryService.handle(query).get();
         logger.info("Received health update for device {}: status={}", macAddress, healthUpdate.status());
 
         try {
             DeviceStatus newStatus = DeviceStatus.valueOf(healthUpdate.status().toUpperCase());
+            var deviceDetails = deviceDetailsRepository
+                    .findByMacAddress(macAddress)
+                    .orElseThrow(() -> new DeviceNotFoundException(macAddress));
+
             if (deviceDetails.getStatus() == newStatus) {
                 logger.debug("Device {} health status unchanged: {}", macAddress, newStatus);
                 return ResponseEntity.ok(new DeviceHealthResource(
@@ -176,8 +177,9 @@ public class DeviceDetailsController {
     @GetMapping("/thresholds")
     public ResponseEntity<DeviceThresholdsResource> getDeviceThresholds(HttpServletRequest request, @RequestParam Integer tripId) {
         String macAddress = getMacAddressFromToken(request);
-        GetDeviceDetailsQuery query = new GetDeviceDetailsQuery(macAddress);
-        DeviceDetails deviceDetails = deviceDetailsQueryService.handle(query).get();
+        var deviceDetails = deviceDetailsRepository
+                .findByMacAddress(macAddress)
+                .orElseThrow(() -> new DeviceNotFoundException(macAddress));
 
         List<ThresholdManager> thresholds = cloudThresholdService.getThresholdsByTripId(tripId);
         DeviceThresholdsResource resource = DeviceThresholdsResourceAssembler.toResource(deviceDetails, thresholds);
@@ -295,8 +297,7 @@ public class DeviceDetailsController {
             HttpServletRequest request) {
 
         String macAddress = getMacAddressFromToken(request);
-        GetDeviceDetailsQuery query = new GetDeviceDetailsQuery(macAddress);
-        DeviceDetails deviceDetails = deviceDetailsQueryService.handle(query).get();
+        logger.info("Correct device {}", macAddress);
 
         var command = new GetTripDetailsCommand(driverId, truckId);
         TripDetailsResponseCommand tripData = cloudTripService.getTripDetails(command);
