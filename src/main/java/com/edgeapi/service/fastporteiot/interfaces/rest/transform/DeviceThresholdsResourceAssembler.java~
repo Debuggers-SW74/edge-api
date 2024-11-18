@@ -8,36 +8,36 @@ import java.util.List;
 
 public class DeviceThresholdsResourceAssembler {
     public static DeviceThresholdsResource toResource(DeviceDetails device, List<ThresholdManager> thresholds) {
-        Double temperatureMax = thresholds.stream()
+        float temperatureMax = thresholds.stream()
                 .filter(threshold -> "SENSOR_TEMPERATURE".equals(threshold.getSensorType()))
                 .map(ThresholdManager::getMaxThreshold)
                 .findFirst()
-                .orElse(0.0);
+                .orElse(0f);
 
-        Double humidityMax = thresholds.stream()
+        float humidityMax = thresholds.stream()
                 .filter(threshold -> "SENSOR_HUMIDITY".equals(threshold.getSensorType()))
                 .map(ThresholdManager::getMaxThreshold)
                 .findFirst()
-                .orElse(0.0);
+                .orElse(0f);
 
-        Double pressureMax = thresholds.stream()
+        float pressureMax = thresholds.stream()
                 .filter(threshold -> "SENSOR_PRESSURE".equals(threshold.getSensorType()))
                 .map(ThresholdManager::getMaxThreshold)
                 .findFirst()
-                .orElse(0.0);
+                .orElse(0f);
 
-        Double gasMax = thresholds.stream()
+        float gasMax = thresholds.stream()
                 .filter(threshold -> "SENSOR_GAS".equals(threshold.getSensorType()))
                 .map(ThresholdManager::getMaxThreshold)
                 .findFirst()
-                .orElse(0.0);
+                .orElse(0f);
 
         return new DeviceThresholdsResource(
                 device.getMacAddress(),
-                temperatureMax.floatValue(),
-                humidityMax.floatValue(),
-                pressureMax.floatValue(),
-                gasMax.floatValue()
+                temperatureMax,
+                humidityMax,
+                pressureMax,
+                gasMax
         );
     }
 }

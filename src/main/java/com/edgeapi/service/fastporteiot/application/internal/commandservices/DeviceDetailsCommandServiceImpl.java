@@ -53,10 +53,6 @@ public class DeviceDetailsCommandServiceImpl implements DeviceDetailsCommandServ
 
     @Override
     public DeviceDetails handle(UpdateDeviceDetailsReadingCommand command) {
-        Device device = deviceRepository
-                .findByMacAddress(command.macAddress())
-                .orElseThrow(() -> new DeviceNotFoundException(command.macAddress()));
-
         DeviceDetails deviceDetails = deviceDetailsRepository
                 .findByMacAddress(command.macAddress())
                 .orElseGet(() -> new DeviceDetails(
@@ -110,30 +106,29 @@ public class DeviceDetailsCommandServiceImpl implements DeviceDetailsCommandServ
     }
 
     private ThresholdSettings transformToThresholdSettings(List<ThresholdManager> thresholds) {
-        float maxTemperature = thresholds.stream()
+        Double maxTemperature = thresholds.stream()
                 .filter(threshold -> "SENSOR_TEMPERATURE".equals(threshold.getSensorType()))
                 .map(ThresholdManager::getMaxThreshold)
                 .findFirst()
-                .orElse(0f);
+                .orElse(0.0);
 
-        float maxHumidity = thresholds.stream()
+        Double maxHumidity = thresholds.stream()
                 .filter(threshold -> "SENSOR_HUMIDITY".equals(threshold.getSensorType()))
                 .map(ThresholdManager::getMaxThreshold)
                 .findFirst()
-                .orElse(0f);
+                .orElse(0.0);
 
-        float maxPressure = thresholds.stream()
+        Double maxPressure = thresholds.stream()
                 .filter(threshold -> "SENSOR_PRESSURE".equals(threshold.getSensorType()))
                 .map(ThresholdManager::getMaxThreshold)
                 .findFirst()
-                .orElse(0f);
+                .orElse(0.0);
 
-        float maxGas = thresholds.stream()
+        Double maxGas = thresholds.stream()
                 .filter(threshold -> "SENSOR_GAS".equals(threshold.getSensorType()))
                 .map(ThresholdManager::getMaxThreshold)
                 .findFirst()
-                .orElse(0f);
-
-        return new ThresholdSettings(maxTemperature, maxHumidity, maxPressure, maxGas);
+                .orElse(0.0);
+        return new ThresholdSettings(maxTemperature.floatValue(), maxHumidity.floatValue(), maxPressure.floatValue(), maxGas.floatValue());
     }
 }

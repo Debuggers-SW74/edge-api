@@ -6,9 +6,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ThresholdManager {
-    private Long id;
+    private Integer id;
     private String sensorType;
-    private float maxThreshold;
-    private float minThreshold;
-    private Long tripId;
+    private Double maxThreshold;
+    private Double minThreshold;
+    private Integer tripId;
 }

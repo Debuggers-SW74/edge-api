@@ -63,6 +63,7 @@ public class DeviceDetailsController {
     private final RealTimeSensorData realTimeSensorData = new RealTimeSensorData();
     private final CloudRealTimeSensorDataService cloudRealTimeSensorDataService;
     private final CloudThresholdService cloudThresholdService;
+    private final List<ThresholdManager> thresholdManagers = new ArrayList<>();
 
     @Autowired
     public DeviceDetailsController(DeviceDetailsCommandService deviceDetailsCommandService, DeviceDetailsQueryService deviceDetailsQueryService, ApplicationEventPublisher eventPublisher, BearerTokenService tokenService, DeviceDetailsRepository deviceDetailsRepository, CloudAlertService cloudAlertService, CloudTripService cloudTripService, CloudRealTimeSensorDataService cloudRealTimeSensorDataService, CloudThresholdService cloudThresholdService) {
@@ -98,10 +99,10 @@ public class DeviceDetailsController {
     @Operation(summary = "Update device state with new sensor readings")
     @ApiResponse(responseCode = "200", description = "Device state updated successfully")
     @ApiResponse(responseCode = "400", description = "Invalid reading values")
-    @PostMapping("/state")
+    @PostMapping("/state/{tripId}")
     public ResponseEntity<DeviceStateResource> updateDeviceState(
             HttpServletRequest request,
-            @RequestBody SensorReading reading, @RequestParam Integer tripId) {
+            @RequestBody SensorReading reading, @PathVariable Integer tripId) {
         String macAddress = getMacAddressFromToken(request);
         logger.info("Received state update for device {}: {}", macAddress, reading);
 
@@ -130,7 +131,7 @@ public class DeviceDetailsController {
     @PostMapping("/health")
     public ResponseEntity<DeviceHealthResource> updateDeviceHealth(
             HttpServletRequest request,
-            @RequestBody DeviceHealthUpdateResource healthUpdate) {
+            @Valid @RequestBody DeviceHealthUpdateResource healthUpdate) {
         String macAddress = getMacAddressFromToken(request);
         logger.info("Received health update for device {}: status={}", macAddress, healthUpdate.status());
 
@@ -174,8 +175,8 @@ public class DeviceDetailsController {
         }
     }
 
-    @GetMapping("/thresholds")
-    public ResponseEntity<DeviceThresholdsResource> getDeviceThresholds(HttpServletRequest request, @RequestParam Integer tripId) {
+    @GetMapping("/thresholds/{tripId}")
+    public ResponseEntity<DeviceThresholdsResource> getDeviceThresholds(HttpServletRequest request, @PathVariable Integer tripId) {
         String macAddress = getMacAddressFromToken(request);
         var deviceDetails = deviceDetailsRepository
                 .findByMacAddress(macAddress)
@@ -235,7 +236,7 @@ public class DeviceDetailsController {
     @ApiResponse(responseCode = "400", description = "Invalid event data")
     public ResponseEntity<Void> publishDeviceEvent(
             HttpServletRequest request,
-            @RequestBody DeviceEventPublishResource eventPublish) {
+            @Valid @RequestBody DeviceEventPublishResource eventPublish) {
         String macAddress = getMacAddressFromToken(request);
         logger.info("Received event for device {}: type={}, sensor={}",
                 macAddress, eventPublish.eventType(), eventPublish.sensorType());

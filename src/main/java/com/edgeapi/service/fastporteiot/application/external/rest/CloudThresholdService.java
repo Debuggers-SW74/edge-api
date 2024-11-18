@@ -35,14 +35,12 @@ public class CloudThresholdService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("X-Internal-API-Key", internalApiKey);
-        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
-
         try {
             ResponseEntity<List<ThresholdManager>> response = restTemplate.exchange(
                     url,
                     HttpMethod.GET,
-                    requestEntity,
-                    new ParameterizedTypeReference<List<ThresholdManager>>() {}
+                    new HttpEntity<>(headers),
+                    new ParameterizedTypeReference<>() {}
             );
 
             if (response.getStatusCode() == HttpStatus.OK) {
