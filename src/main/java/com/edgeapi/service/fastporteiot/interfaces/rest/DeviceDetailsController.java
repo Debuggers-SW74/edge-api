@@ -15,6 +15,7 @@ import com.edgeapi.service.fastporteiot.domain.model.queries.GetDeviceDetailsQue
 import com.edgeapi.service.fastporteiot.domain.model.queries.GetDeviceDetailsReadingHistoryQuery;
 import com.edgeapi.service.fastporteiot.domain.model.valueobjects.DeviceStatus;
 import com.edgeapi.service.fastporteiot.domain.model.valueobjects.SensorReading;
+import com.edgeapi.service.fastporteiot.domain.model.valueobjects.ThresholdSettings;
 import com.edgeapi.service.fastporteiot.domain.services.DeviceDetailsCommandService;
 import com.edgeapi.service.fastporteiot.domain.services.DeviceDetailsQueryService;
 import com.edgeapi.service.fastporteiot.infrastructure.persistence.jpa.repositories.DeviceDetailsRepository;
@@ -90,7 +91,12 @@ public class DeviceDetailsController {
     public ResponseEntity<DeviceStateResource> getDeviceState(HttpServletRequest request) {
         String macAddress = getMacAddressFromToken(request);
         GetDeviceDetailsQuery query = new GetDeviceDetailsQuery(macAddress);
-        DeviceDetails deviceDetails = deviceDetailsQueryService.handle(query).get();
+        var deviceDetails = deviceDetailsQueryService.handle(query)
+                .orElseGet(() -> {
+                    RegisterDeviceDetailsCommand command = new RegisterDeviceDetailsCommand(macAddress, ThresholdSettings.defaultSettings());
+                    return deviceDetailsCommandService.handle(command);
+                });
+        logger.info("Detail found {}: {}", macAddress, deviceDetails);
         return ResponseEntity.ok(DeviceStateResourceAssembler.toResource(deviceDetails));
     }
 
@@ -104,9 +110,13 @@ public class DeviceDetailsController {
             @RequestParam Integer tripId
     ) {
         String macAddress = getMacAddressFromToken(request);
-        GetDeviceDetailsQuery query = new GetDeviceDetailsQuery(macAddress);
-        DeviceDetails deviceDetails = deviceDetailsQueryService.handle(query).get();
-        logger.info("Received state update for device {}: {}", macAddress, reading);
+        var query = new GetDeviceDetailsQuery(macAddress);
+        var deviceDetails = deviceDetailsQueryService.handle(query)
+                .orElseGet(() -> {
+                    RegisterDeviceDetailsCommand command = new RegisterDeviceDetailsCommand(macAddress, ThresholdSettings.defaultSettings());
+                    return deviceDetailsCommandService.handle(command);
+                });
+        logger.info("Results {}: {}", macAddress, deviceDetails);
 
         var command = new UpdateDeviceDetailsReadingCommand(macAddress, reading, tripId);
         var updatedDeviceDetails = deviceDetailsCommandService.handle(command);
@@ -293,11 +303,7 @@ public class DeviceDetailsController {
             @RequestParam Integer driverId,
             @RequestParam Integer truckId,
             HttpServletRequest request) {
-
         String macAddress = getMacAddressFromToken(request);
-        GetDeviceDetailsQuery query = new GetDeviceDetailsQuery(macAddress);
-        DeviceDetails deviceDetails = deviceDetailsQueryService.handle(query).get();
-
         var command = new GetTripDetailsCommand(driverId, truckId);
         TripDetailsResponseCommand tripData = cloudTripService.getTripDetails(command);
         TripDetailsResource tripDetailsResource = TripDetailsResourceAssembler.toResource(tripData);

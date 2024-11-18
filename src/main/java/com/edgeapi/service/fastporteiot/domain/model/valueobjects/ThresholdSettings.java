@@ -14,4 +14,8 @@ public record ThresholdSettings(
             throw new IllegalArgumentException("Threshold values cannot be negative");
         }
     }
+
+    public static ThresholdSettings defaultSettings() {
+        return new ThresholdSettings(40.0f, 60.0f, 100.0f, 50.0f);
+    }
 }
