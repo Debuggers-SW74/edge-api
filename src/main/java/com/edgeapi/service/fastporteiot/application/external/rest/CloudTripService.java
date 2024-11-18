@@ -31,9 +31,7 @@ public class CloudTripService {
         this.internalApiKey = internalApiKey;
     }
 
-
     public TripDetailsResponseCommand getTripDetails(GetTripDetailsCommand command) {
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("X-Internal-API-Key", internalApiKey);

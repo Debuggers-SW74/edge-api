@@ -316,9 +316,7 @@ public class DeviceDetailsController {
             HttpServletRequest request) {
 
         String macAddress = getMacAddressFromToken(request);
-        var query = new GetDeviceDetailsQuery(macAddress);
-        deviceDetailsQueryService.handle(query)
-                .orElseThrow(() -> new DeviceNotFoundException(macAddress));
+        logger.info("Correct device {}", macAddress);
 
         var command = new GetTripDetailsCommand(driverId, truckId);
         TripDetailsResponseCommand tripData = cloudTripService.getTripDetails(command);
@@ -332,11 +330,7 @@ public class DeviceDetailsController {
     @PostMapping("/send-data/real-time")
     public ResponseEntity<Void> sendReadings(HttpServletRequest request) {
         String macAddress = getMacAddressFromToken(request);
-        var query = new GetDeviceDetailsQuery(macAddress);
-        deviceDetailsQueryService.handle(query)
-                .orElseThrow(() -> new DeviceNotFoundException(macAddress));
-
-        logger.info("Sending accumulated readings for device {}", macAddress);
+        logger.info("Correct device {}", macAddress);
 
         List<SensorReading> readings = realTimeSensorData.getReadings();
         if (readings.isEmpty()) {
