@@ -186,24 +186,6 @@ public class DeviceDetailsController {
         return ResponseEntity.ok(resource);
     }
 
-    /*
-    @PutMapping("/thresholds")
-    @Operation(summary = "Update device thresholds")
-    @ApiResponse(responseCode = "200", description = "Thresholds updated successfully")
-    @ApiResponse(responseCode = "400", description = "Invalid threshold values")
-    public ResponseEntity<DeviceThresholdsResource> updateDeviceThresholds(
-            HttpServletRequest request,
-            @Valid @RequestBody ThresholdSettings thresholds) {
-        String macAddress = getMacAddressFromToken(request);
-        logger.info("Updating thresholds for device {}: {}", macAddress, thresholds);
-
-        var command = new UpdateDeviceDetailsThresholdsCommand(macAddress, thresholds);
-        var updatedDeviceDetails = deviceDetailsCommandService.handle(command);
-
-        return ResponseEntity.ok(DeviceThresholdsResourceAssembler.toResource(updatedDeviceDetails));
-    }
-    */
-
     @GetMapping("/reading-history")
     @Operation(summary = "Get device reading history within a date range")
     @ApiResponse(responseCode = "200", description = "History retrieved successfully")
