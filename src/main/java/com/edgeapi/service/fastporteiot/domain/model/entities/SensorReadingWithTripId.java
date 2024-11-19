@@ -4,7 +4,7 @@ import com.edgeapi.service.fastporteiot.domain.model.valueobjects.SensorReading;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record SensorReadingWithTripId(
-        int tripId,
+        Integer tripId,
         SensorReading reading,
         String timestamp
 ) {

@@ -18,6 +18,7 @@ public record SensorReadingWithTripId(
         }
     }
 
+    @JsonProperty("temperatureValue")
     public float getTemperature() {
         return reading.temperature();
     }
