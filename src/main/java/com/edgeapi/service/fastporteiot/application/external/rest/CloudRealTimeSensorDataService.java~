@@ -32,7 +32,7 @@ public class CloudRealTimeSensorDataService {
 
     public void sendReadings(List<SensorReadingWithTripId> readings) {
         try {
-            String url = cloudApiUrl + "/api/v1/sensor-data";
+            String url = cloudApiUrl + "/api/v1/sensor-data/real-time";
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
