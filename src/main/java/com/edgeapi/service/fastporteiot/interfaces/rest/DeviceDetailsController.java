@@ -9,6 +9,7 @@ import com.edgeapi.service.fastporteiot.domain.model.aggregates.DeviceDetails;
 import com.edgeapi.service.fastporteiot.domain.model.commands.*;
 import com.edgeapi.service.fastporteiot.domain.model.entities.DeviceEvent;
 import com.edgeapi.service.fastporteiot.domain.model.entities.RealTimeSensorData;
+import com.edgeapi.service.fastporteiot.domain.model.entities.SensorReadingWithTripId;
 import com.edgeapi.service.fastporteiot.domain.model.entities.ThresholdManager;
 import com.edgeapi.service.fastporteiot.domain.model.events.ThresholdExceededEvent;
 import com.edgeapi.service.fastporteiot.domain.model.queries.GetDeviceDetailsQuery;
@@ -91,11 +92,8 @@ public class DeviceDetailsController {
     public ResponseEntity<DeviceStateResource> getDeviceState(HttpServletRequest request) {
         String macAddress = getMacAddressFromToken(request);
         GetDeviceDetailsQuery query = new GetDeviceDetailsQuery(macAddress);
-        var deviceDetails = deviceDetailsQueryService.handle(query)
-                .orElseGet(() -> {
-                    RegisterDeviceDetailsCommand command = new RegisterDeviceDetailsCommand(macAddress, ThresholdSettings.defaultSettings());
-                    return deviceDetailsCommandService.handle(command);
-                });
+        var deviceDetails = deviceDetailsQueryService.handle(query).
+                orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
         logger.info("Detail found {}: {}", macAddress, deviceDetails);
         return ResponseEntity.ok(DeviceStateResourceAssembler.toResource(deviceDetails));
     }
@@ -113,7 +111,8 @@ public class DeviceDetailsController {
         var command = new UpdateDeviceDetailsReadingCommand(macAddress, reading, tripId);
         var updatedDeviceDetails = deviceDetailsCommandService.handle(command);
 
-        realTimeSensorData.addReading(reading);
+        String timestamp = Instant.now().toString();
+        realTimeSensorData.addReading(tripId, reading, timestamp);
         return ResponseEntity.ok(DeviceStateResource.fromDeviceDetails(updatedDeviceDetails));
     }
 
@@ -320,14 +319,14 @@ public class DeviceDetailsController {
         String macAddress = getMacAddressFromToken(request);
         logger.info("Correct device {}", macAddress);
 
-        List<SensorReading> readings = realTimeSensorData.getReadings();
-        if (readings.isEmpty()) {
+        List<SensorReadingWithTripId> readingsWithTripId  = realTimeSensorData.getReadingsWithTripId();
+        if (readingsWithTripId.isEmpty()) {
             logger.warn("No readings to send for device {}", macAddress);
             return ResponseEntity.ok().build();
         }
 
         try {
-            cloudRealTimeSensorDataService.sendReadings(readings);
+            cloudRealTimeSensorDataService.sendReadings(readingsWithTripId);
             realTimeSensorData.clear();
             return ResponseEntity.ok().build();
         } catch (Exception e) {

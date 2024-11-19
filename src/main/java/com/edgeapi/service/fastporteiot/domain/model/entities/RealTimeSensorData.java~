@@ -7,8 +7,8 @@ import java.util.List;
 public class RealTimeSensorData {
     private final List<SensorReadingWithTripId> readingsWithTripId = new ArrayList<>();
 
-    public void addReading(int tripId, SensorReading reading, String timestamp) {
-        readingsWithTripId.add(new SensorReadingWithTripId(tripId, reading, timestamp));
+    public void addReading(int tripId, SensorReading reading) {
+        readingsWithTripId.add(new SensorReadingWithTripId(tripId, reading));
     }
 
     public List<SensorReadingWithTripId> getReadingsWithTripId() {

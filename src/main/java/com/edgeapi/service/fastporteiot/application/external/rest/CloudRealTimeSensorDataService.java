@@ -1,5 +1,6 @@
 package com.edgeapi.service.fastporteiot.application.external.rest;
 
+import com.edgeapi.service.fastporteiot.domain.model.entities.SensorReadingWithTripId;
 import com.edgeapi.service.fastporteiot.domain.model.valueobjects.SensorReading;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,7 +30,7 @@ public class CloudRealTimeSensorDataService {
         this.internalApiKey = internalApiKey;
     }
 
-    public void sendReadings(List<SensorReading> readings) {
+    public void sendReadings(List<SensorReadingWithTripId> readings) {
         try {
             String url = cloudApiUrl + "/api/v1/sensor-data/real-time";
 
@@ -37,7 +38,7 @@ public class CloudRealTimeSensorDataService {
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("X-Internal-API-Key", internalApiKey);
 
-            HttpEntity<List<SensorReading>> requestEntity = new HttpEntity<>(readings, headers);
+            HttpEntity<List<SensorReadingWithTripId>> requestEntity = new HttpEntity<>(readings, headers);
             log.info("Sending readings to {}", url);
 
             ResponseEntity<Void> response = restTemplate.exchange(
