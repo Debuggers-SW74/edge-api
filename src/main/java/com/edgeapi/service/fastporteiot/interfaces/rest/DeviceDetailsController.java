@@ -20,6 +20,7 @@ import com.edgeapi.service.fastporteiot.domain.model.valueobjects.ThresholdSetti
 import com.edgeapi.service.fastporteiot.domain.services.DeviceDetailsCommandService;
 import com.edgeapi.service.fastporteiot.domain.services.DeviceDetailsQueryService;
 import com.edgeapi.service.fastporteiot.infrastructure.persistence.jpa.repositories.DeviceDetailsRepository;
+import com.edgeapi.service.fastporteiot.infrastructure.persistence.jpa.repositories.RealTimeSensorDataRepository;
 import com.edgeapi.service.fastporteiot.interfaces.rest.resources.*;
 import com.edgeapi.service.fastporteiot.interfaces.rest.transform.DeviceStateResourceAssembler;
 import com.edgeapi.service.fastporteiot.interfaces.rest.transform.DeviceThresholdsResourceAssembler;
@@ -68,9 +69,10 @@ public class DeviceDetailsController {
     private final RealTimeSensorData realTimeSensorData = new RealTimeSensorData();
     private final CloudRealTimeSensorDataService cloudRealTimeSensorDataService;
     private final CloudThresholdService cloudThresholdService;
+    private final RealTimeSensorDataRepository realTimeSensorDataRepository;
 
     @Autowired
-    public DeviceDetailsController(DeviceDetailsCommandService deviceDetailsCommandService, DeviceDetailsQueryService deviceDetailsQueryService, ApplicationEventPublisher eventPublisher, BearerTokenService tokenService, DeviceDetailsRepository deviceDetailsRepository, CloudAlertService cloudAlertService, CloudTripService cloudTripService, CloudRealTimeSensorDataService cloudRealTimeSensorDataService, CloudThresholdService cloudThresholdService) {
+    public DeviceDetailsController(DeviceDetailsCommandService deviceDetailsCommandService, DeviceDetailsQueryService deviceDetailsQueryService, ApplicationEventPublisher eventPublisher, BearerTokenService tokenService, DeviceDetailsRepository deviceDetailsRepository, CloudAlertService cloudAlertService, CloudTripService cloudTripService, CloudRealTimeSensorDataService cloudRealTimeSensorDataService, CloudThresholdService cloudThresholdService, RealTimeSensorDataRepository realTimeSensorDataRepository) {
         this.deviceDetailsCommandService = deviceDetailsCommandService;
         this.deviceDetailsQueryService = deviceDetailsQueryService;
         this.eventPublisher = eventPublisher;
@@ -80,6 +82,7 @@ public class DeviceDetailsController {
         this.cloudTripService = cloudTripService;
         this.cloudRealTimeSensorDataService = cloudRealTimeSensorDataService;
         this.cloudThresholdService = cloudThresholdService;
+        this.realTimeSensorDataRepository = realTimeSensorDataRepository;
     }
 
     private String getMacAddressFromToken(HttpServletRequest request) {
@@ -314,22 +317,23 @@ public class DeviceDetailsController {
     @ApiResponse(responseCode = "200", description = "Readings sent successfully")
     @ApiResponse(responseCode = "500", description = "Error sending readings")
     @PostMapping("/send-data/real-time")
-    public ResponseEntity<Void> sendReadings(HttpServletRequest request) throws JsonProcessingException {
+    public ResponseEntity<Void> sendReadings(HttpServletRequest request)  {
         String macAddress = getMacAddressFromToken(request);
         logger.info("Correct device {}", macAddress);
 
-        List<RealTimeSensorData.SensorData> sensorDataList = realTimeSensorData.getSensorDataList();
-        if (sensorDataList.isEmpty()) {
+        List<RealTimeSensorData> readings = realTimeSensorDataRepository.findAll();
+        if (readings.isEmpty()) {
             logger.warn("No readings available to send for device {}", macAddress);
             return ResponseEntity.badRequest().build();
         }
         try {
-            cloudRealTimeSensorDataService.sendReadings(sensorDataList);
-            realTimeSensorData.clear();
+            cloudRealTimeSensorDataService.sendReadings(readings);
+            realTimeSensorDataRepository.deleteAll(readings);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error("Error sending readings: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
 }

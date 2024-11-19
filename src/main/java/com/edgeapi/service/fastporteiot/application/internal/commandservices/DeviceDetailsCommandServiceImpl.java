@@ -13,6 +13,7 @@ import com.edgeapi.service.fastporteiot.domain.model.valueobjects.ThresholdSetti
 import com.edgeapi.service.fastporteiot.domain.services.DeviceDetailsCommandService;
 import com.edgeapi.service.fastporteiot.infrastructure.persistence.jpa.repositories.DeviceDetailsRepository;
 import com.edgeapi.service.fastporteiot.infrastructure.persistence.jpa.repositories.ReadingHistoryRepository;
+import com.edgeapi.service.fastporteiot.infrastructure.persistence.jpa.repositories.RealTimeSensorDataRepository;
 import com.edgeapi.service.iam.infrastructure.persistence.jpa.repositories.DeviceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -29,19 +30,21 @@ public class DeviceDetailsCommandServiceImpl implements DeviceDetailsCommandServ
     private final DeviceRepository deviceRepository;
     private final CloudThresholdService cloudThresholdService;
 
-    private RealTimeSensorData realTimeSensorData = new RealTimeSensorData();
+    private final RealTimeSensorData realTimeSensorData = new RealTimeSensorData();
+    private final RealTimeSensorDataRepository realTimeSensorDataRepository;
 
     @Autowired
     public DeviceDetailsCommandServiceImpl(
             DeviceDetailsRepository deviceDetailsRepository,
             ReadingHistoryRepository readingHistoryRepository,
-            ApplicationEventPublisher eventPublisher, DeviceRepository deviceRepository, CloudThresholdService cloudThresholdService
+            ApplicationEventPublisher eventPublisher, DeviceRepository deviceRepository, CloudThresholdService cloudThresholdService, RealTimeSensorDataRepository realTimeSensorDataRepository
     ) {
         this.deviceDetailsRepository = deviceDetailsRepository;
         this.readingHistoryRepository = readingHistoryRepository;
         this.eventPublisher = eventPublisher;
         this.deviceRepository = deviceRepository;
         this.cloudThresholdService = cloudThresholdService;
+        this.realTimeSensorDataRepository = realTimeSensorDataRepository;
     }
 
     @Override
@@ -55,6 +58,16 @@ public class DeviceDetailsCommandServiceImpl implements DeviceDetailsCommandServ
 
     @Override
     public DeviceDetails handle(UpdateDeviceDetailsReadingCommand command) {
+        String timestamp = Instant.now().toString();
+        RealTimeSensorData entity = new RealTimeSensorData();
+        entity.setTripId(command.tripId());
+        entity.setTemperatureValue(command.reading().temperature());
+        entity.setHumidityValue(command.reading().humidity());
+        entity.setPressureValue(command.reading().pressure());
+        entity.setGasValue(command.reading().gas());
+        entity.setTimestamp(timestamp);
+        realTimeSensorDataRepository.save(entity);
+
         DeviceDetails deviceDetails = deviceDetailsRepository
                 .findByMacAddress(command.macAddress())
                 .orElseGet(() -> new DeviceDetails(
@@ -72,9 +85,6 @@ public class DeviceDetailsCommandServiceImpl implements DeviceDetailsCommandServ
                 deviceDetails
         );
         readingHistoryRepository.save(history);
-
-        String timestamp = Instant.now().toString();
-        realTimeSensorData.addReading(command.tripId(), command.reading(), timestamp);
 
         deviceDetails.updateReading(command.reading());
         return deviceDetailsRepository.save(deviceDetails);

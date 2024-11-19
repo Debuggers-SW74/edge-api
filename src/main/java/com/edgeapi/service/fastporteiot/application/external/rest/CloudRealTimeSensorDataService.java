@@ -13,7 +13,9 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.http.*;
 import org.springframework.http.HttpStatus;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -32,21 +34,33 @@ public class CloudRealTimeSensorDataService {
         this.internalApiKey = internalApiKey;
     }
 
-    public void sendReadings(List<RealTimeSensorData.SensorData> sensorDataList) {
-        if (sensorDataList.isEmpty()) {
+    public void sendReadings(List<RealTimeSensorData> sensorReadingEntities) {
+        if (sensorReadingEntities.isEmpty()) {
             log.warn("No readings to send.");
             return;
         }
 
         try {
+            // Convert SensorReadingEntity to DTOs or the expected Cloud API model
+            List<Map<String, Object>> readingsToSend = sensorReadingEntities.stream().map(entity -> {
+                Map<String, Object> reading = new HashMap<>();
+                reading.put("tripId", entity.getTripId());
+                reading.put("temperatureValue", entity.getTemperatureValue());
+                reading.put("humidityValue", entity.getHumidityValue());
+                reading.put("pressureValue", entity.getPressureValue());
+                reading.put("gasValue", entity.getGasValue());
+                reading.put("timestamp", entity.getTimestamp());
+                return reading;
+            }).toList();
+
             String url = cloudApiUrl + "/api/v1/sensor-data";
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("X-Internal-API-Key", internalApiKey);
 
-            HttpEntity<List<RealTimeSensorData.SensorData>> requestEntity = new HttpEntity<>(sensorDataList, headers);
-            log.info("Sending {} readings to {}", sensorDataList.size(), url);
+            HttpEntity<List<Map<String, Object>>> requestEntity = new HttpEntity<>(readingsToSend, headers);
+            log.info("Sending {} readings to {}", sensorReadingEntities.size(), url);
 
             ResponseEntity<Void> response = restTemplate.exchange(
                     url,
@@ -55,7 +69,7 @@ public class CloudRealTimeSensorDataService {
                     Void.class
             );
 
-            if (response.getStatusCode() == HttpStatus.OK) {
+            if (response.getStatusCode() == HttpStatus.OK || response.getStatusCode() == HttpStatus.CREATED) {
                 log.info("Readings sent successfully.");
             } else {
                 throw new RuntimeException("Unexpected response status: " + response.getStatusCode());
