@@ -4,6 +4,7 @@ import com.edgeapi.service.fastporteiot.domain.model.entities.SensorReadingWithT
 import com.edgeapi.service.fastporteiot.domain.model.valueobjects.SensorReading;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -46,11 +47,11 @@ public class CloudRealTimeSensorDataService {
             HttpEntity<List<SensorReadingWithTripId>> requestEntity = new HttpEntity<>(readings, headers);
             log.info("Sending readings to {}", url);
 
-            ResponseEntity<Void> response = restTemplate.exchange(
+            ResponseEntity<List<SensorReadingWithTripId>> response = restTemplate.exchange(
                     url,
                     HttpMethod.POST,
                     requestEntity,
-                    Void.class
+                    new ParameterizedTypeReference<>() {}
             );
 
             if (response.getStatusCode() == HttpStatus.OK) {
