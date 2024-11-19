@@ -112,9 +112,6 @@ public class DeviceDetailsController {
         String macAddress = getMacAddressFromToken(request);
         var command = new UpdateDeviceDetailsReadingCommand(macAddress, reading, tripId);
         var updatedDeviceDetails = deviceDetailsCommandService.handle(command);
-
-        String timestamp = Instant.now().toString();
-        realTimeSensorData.addReading(tripId, reading, timestamp);
         return ResponseEntity.ok(DeviceStateResource.fromDeviceDetails(updatedDeviceDetails));
     }
 

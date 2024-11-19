@@ -7,12 +7,12 @@ import com.edgeapi.service.fastporteiot.domain.model.commands.RegisterDeviceDeta
 import com.edgeapi.service.fastporteiot.domain.model.commands.UpdateDeviceDetailsHealthCommand;
 import com.edgeapi.service.fastporteiot.domain.model.commands.UpdateDeviceDetailsReadingCommand;
 import com.edgeapi.service.fastporteiot.domain.model.entities.ReadingHistory;
-import com.edgeapi.service.fastporteiot.domain.model.entities.RealTimeSensorData;
 import com.edgeapi.service.fastporteiot.domain.model.entities.ThresholdManager;
 import com.edgeapi.service.fastporteiot.domain.model.valueobjects.ThresholdSettings;
 import com.edgeapi.service.fastporteiot.domain.services.DeviceDetailsCommandService;
 import com.edgeapi.service.fastporteiot.infrastructure.persistence.jpa.repositories.DeviceDetailsRepository;
 import com.edgeapi.service.fastporteiot.infrastructure.persistence.jpa.repositories.ReadingHistoryRepository;
+import com.edgeapi.service.iam.domain.model.aggregates.Device;
 import com.edgeapi.service.iam.infrastructure.persistence.jpa.repositories.DeviceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -28,8 +28,6 @@ public class DeviceDetailsCommandServiceImpl implements DeviceDetailsCommandServ
     private final ApplicationEventPublisher eventPublisher;
     private final DeviceRepository deviceRepository;
     private final CloudThresholdService cloudThresholdService;
-
-    private RealTimeSensorData realTimeSensorData = new RealTimeSensorData();
 
     @Autowired
     public DeviceDetailsCommandServiceImpl(
@@ -72,9 +70,6 @@ public class DeviceDetailsCommandServiceImpl implements DeviceDetailsCommandServ
                 deviceDetails
         );
         readingHistoryRepository.save(history);
-
-        String timestamp = Instant.now().toString();
-        realTimeSensorData.addReading(command.tripId(), command.reading(), timestamp);
 
         deviceDetails.updateReading(command.reading());
         return deviceDetailsRepository.save(deviceDetails);
