@@ -31,6 +31,11 @@ public class CloudRealTimeSensorDataService {
     }
 
     public void sendReadings(List<SensorReadingWithTripId> readings) {
+        if (readings == null || readings.isEmpty()) {
+            log.warn("No readings to send to Cloud API.");
+            return;
+        }
+
         try {
             String url = cloudApiUrl + "/api/v1/sensor-data";
 

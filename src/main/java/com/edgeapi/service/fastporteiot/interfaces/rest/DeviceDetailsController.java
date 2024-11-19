@@ -25,6 +25,8 @@ import com.edgeapi.service.fastporteiot.interfaces.rest.transform.DeviceStateRes
 import com.edgeapi.service.fastporteiot.interfaces.rest.transform.DeviceThresholdsResourceAssembler;
 import com.edgeapi.service.fastporteiot.interfaces.rest.transform.TripDetailsResourceAssembler;
 import com.edgeapi.service.iam.infrastructure.tokens.jwt.BearerTokenService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -315,21 +317,24 @@ public class DeviceDetailsController {
     @ApiResponse(responseCode = "200", description = "Readings sent successfully")
     @ApiResponse(responseCode = "500", description = "Error sending readings")
     @PostMapping("/send-data/real-time")
-    public ResponseEntity<Void> sendReadings(HttpServletRequest request) {
+    public ResponseEntity<Void> sendReadings(HttpServletRequest request) throws JsonProcessingException {
         String macAddress = getMacAddressFromToken(request);
         logger.info("Correct device {}", macAddress);
 
-        List<SensorReadingWithTripId> readingsWithTripId  = realTimeSensorData.getReadingsWithTripId();
-        if (readingsWithTripId.isEmpty()) {
-            logger.warn("No readings to send for device {}", macAddress);
-            return ResponseEntity.ok().build();
+        List<SensorReadingWithTripId> readingsWithTripId = realTimeSensorData.getReadingsWithTripId();
+        if (readingsWithTripId == null || readingsWithTripId.isEmpty()) {
+            logger.warn("No readings available to send for device {}", macAddress);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // O un código diferente si es más apropiado
         }
+        ObjectMapper mapper = new ObjectMapper();
+        String json = mapper.writeValueAsString(readingsWithTripId);
+        logger.info("Generated JSON: {}", json);
 
         try {
             cloudRealTimeSensorDataService.sendReadings(readingsWithTripId);
             realTimeSensorData.clear();
             return ResponseEntity.ok().build();
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             logger.error("Error sending readings to Cloud API: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
