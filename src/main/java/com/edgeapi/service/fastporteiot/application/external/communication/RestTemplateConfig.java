@@ -16,13 +16,21 @@ import org.slf4j.LoggerFactory;
 public class RestTemplateConfig {
     private static final Logger log = LoggerFactory.getLogger(RestTemplateConfig.class);
 
+    /**
+     * Configura y proporciona un bean de RestTemplate con un interceptor para logging detallado.
+     * 
+     * @return una instancia de RestTemplate configurada.
+     */
     @Bean
     public RestTemplate restTemplate() {
+        // Configura la fábrica de solicitudes HTTP con un tiempo de espera de conexión de 5000 ms
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
         factory.setConnectTimeout(5000);
+
+        // Crea una instancia de RestTemplate con la fábrica de solicitudes configurada
         RestTemplate restTemplate = new RestTemplate(factory);
 
-        // Agregamos un interceptor para logging detallado
+        // Agrega un interceptor para logging detallado de las solicitudes y respuestas HTTP
         restTemplate.setInterceptors(Collections.singletonList((request, body, execution) -> {
             log.debug("Making request to: {} {}", request.getMethod(), request.getURI());
             log.debug("Request headers: {}", request.getHeaders());

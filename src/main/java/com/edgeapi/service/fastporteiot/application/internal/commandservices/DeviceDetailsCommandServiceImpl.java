@@ -33,6 +33,17 @@ public class DeviceDetailsCommandServiceImpl implements DeviceDetailsCommandServ
     private final RealTimeSensorData realTimeSensorData = new RealTimeSensorData();
     private final RealTimeSensorDataRepository realTimeSensorDataRepository;
 
+
+    /**
+     * Constructor para inyectar dependencias y configurar el servicio.
+     *
+     * @param deviceDetailsRepository repositorio para acceder a los detalles del dispositivo.
+     * @param readingHistoryRepository repositorio para acceder al historial de lecturas.
+     * @param eventPublisher publicador de eventos de la aplicación.
+     * @param deviceRepository repositorio para acceder a los dispositivos.
+     * @param cloudThresholdService servicio para gestionar umbrales en la nube.
+     * @param realTimeSensorDataRepository repositorio para acceder a los datos de sensores en tiempo real.
+     */
     @Autowired
     public DeviceDetailsCommandServiceImpl(
             DeviceDetailsRepository deviceDetailsRepository,
