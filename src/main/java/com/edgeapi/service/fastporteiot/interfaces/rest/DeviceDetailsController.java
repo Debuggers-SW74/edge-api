@@ -93,7 +93,7 @@ public class DeviceDetailsController {
     @Operation(summary = "Get device current state")
     @ApiResponse(responseCode = "200", description = "Device state retrieved successfully")
     @ApiResponse(responseCode = "404", description = "Device not found")
-    @GetMapping("/{macAddress}/state")
+    @GetMapping("/state")
     public ResponseEntity<DeviceStateResource> getDeviceState(HttpServletRequest request) {
         String macAddress = getMacAddressFromToken(request);
         GetDeviceDetailsQuery query = new GetDeviceDetailsQuery(macAddress);
@@ -106,7 +106,7 @@ public class DeviceDetailsController {
     @Operation(summary = "Update device state with new sensor readings")
     @ApiResponse(responseCode = "200", description = "Device state updated successfully")
     @ApiResponse(responseCode = "400", description = "Invalid reading values")
-    @PostMapping("/{macAddress}/state")
+    @PostMapping("/state")
     public ResponseEntity<DeviceStateResource> updateDeviceState(
             HttpServletRequest request,
             @RequestBody SensorReading reading,
@@ -118,7 +118,7 @@ public class DeviceDetailsController {
         return ResponseEntity.ok(DeviceStateResource.fromDeviceDetails(updatedDeviceDetails));
     }
 
-    @GetMapping("/{macAddress}/health")
+    @GetMapping("/health")
     public ResponseEntity<DeviceHealthResource> getDeviceHealth(HttpServletRequest request) {
         String macAddress = getMacAddressFromToken(request);
         GetDeviceDetailsQuery query = new GetDeviceDetailsQuery(macAddress);
@@ -135,7 +135,7 @@ public class DeviceDetailsController {
         return ResponseEntity.ok(health);
     }
 
-    @PostMapping("/{macAddress}/health")
+    @PostMapping("/health")
     public ResponseEntity<DeviceHealthResource> updateDeviceHealth(
             HttpServletRequest request,
             @RequestBody DeviceHealthUpdateResource healthUpdate) {
@@ -184,7 +184,7 @@ public class DeviceDetailsController {
         }
     }
 
-    @GetMapping("/{macAddress}/thresholds")
+    @GetMapping("/thresholds")
     public ResponseEntity<DeviceThresholdsResource> getDeviceThresholds(HttpServletRequest request, @RequestParam Integer tripId) {
         String macAddress = getMacAddressFromToken(request);
         GetDeviceDetailsQuery query = new GetDeviceDetailsQuery(macAddress);
@@ -199,7 +199,7 @@ public class DeviceDetailsController {
         return ResponseEntity.ok(resource);
     }
 
-    @GetMapping("/{macAddress}/readings/history")
+    @GetMapping("/readings/history")
     @Operation(summary = "Get device reading history within a date range")
     @ApiResponse(responseCode = "200", description = "History retrieved successfully")
     @ApiResponse(responseCode = "400", description = "Invalid date range")
@@ -224,7 +224,7 @@ public class DeviceDetailsController {
         return ResponseEntity.ok(new DeviceDetailsReadingHistoryResource(history));
     }
 
-    @PostMapping("/{macAddress}/events")
+    @PostMapping("/events")
     @Operation(summary = "Publish device event")
     @ApiResponse(responseCode = "200", description = "Event published successfully")
     @ApiResponse(responseCode = "400", description = "Invalid event data")
@@ -285,7 +285,7 @@ public class DeviceDetailsController {
         }
     }
 
-    @GetMapping("/{macAddress}/events")
+    @GetMapping("/events")
     @Operation(summary = "Get device events")
     @ApiResponse(responseCode = "200", description = "Events retrieved successfully")
     public ResponseEntity<List<DeviceEvent>> getDeviceEvents(HttpServletRequest request) {
@@ -301,7 +301,7 @@ public class DeviceDetailsController {
     @Operation(summary = "Get current trip details for a driver")
     @ApiResponse(responseCode = "200", description = "Trip details retrieved successfully")
     @ApiResponse(responseCode = "404", description = "No trips found for the given driver ID")
-    @GetMapping("/{macAddress}/trips/current")
+    @GetMapping("/trips/current")
     public ResponseEntity<TripDetailsResource> getCurrentTripDetails(
             @RequestParam Integer driverId,
             @RequestParam Integer truckId,
@@ -316,7 +316,7 @@ public class DeviceDetailsController {
     @Operation(summary = "Send accumulated sensor readings to Cloud API")
     @ApiResponse(responseCode = "200", description = "Readings sent successfully")
     @ApiResponse(responseCode = "500", description = "Error sending readings")
-    @PostMapping("/{macAddress}/data-stream")
+    @PostMapping("/data-stream")
     public ResponseEntity<Void> sendReadings(HttpServletRequest request)  {
         String macAddress = getMacAddressFromToken(request);
         logger.info("Correct device {}", macAddress);

@@ -54,7 +54,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping(value = "/api/v1/sensors", produces = MediaType.APPLICATION_JSON_VALUE)
-@Tag(name = "Sensor Management", description = "Device Details Management Endpoints")
+@Tag(name = "Sensor Management", description = "Operations to manage IoT sensors")
 public class DeviceDetailsController {
     private final DeviceDetailsCommandService deviceDetailsCommandService;
     private final DeviceDetailsQueryService deviceDetailsQueryService;
@@ -93,7 +93,7 @@ public class DeviceDetailsController {
     @Operation(summary = "Get device current state")
     @ApiResponse(responseCode = "200", description = "Device state retrieved successfully")
     @ApiResponse(responseCode = "404", description = "Device not found")
-    @GetMapping("/{macAddress}/state")
+    @GetMapping("/state")
     public ResponseEntity<DeviceStateResource> getDeviceState(HttpServletRequest request) {
         String macAddress = getMacAddressFromToken(request);
         GetDeviceDetailsQuery query = new GetDeviceDetailsQuery(macAddress);
@@ -106,7 +106,7 @@ public class DeviceDetailsController {
     @Operation(summary = "Update device state with new sensor readings")
     @ApiResponse(responseCode = "200", description = "Device state updated successfully")
     @ApiResponse(responseCode = "400", description = "Invalid reading values")
-    @PostMapping("/{macAddress}/state")
+    @PostMapping("/state")
     public ResponseEntity<DeviceStateResource> updateDeviceState(
             HttpServletRequest request,
             @RequestBody SensorReading reading,
@@ -118,7 +118,7 @@ public class DeviceDetailsController {
         return ResponseEntity.ok(DeviceStateResource.fromDeviceDetails(updatedDeviceDetails));
     }
 
-    @GetMapping("/{macAddress}/health")
+    @GetMapping("/health")
     public ResponseEntity<DeviceHealthResource> getDeviceHealth(HttpServletRequest request) {
         String macAddress = getMacAddressFromToken(request);
         GetDeviceDetailsQuery query = new GetDeviceDetailsQuery(macAddress);
