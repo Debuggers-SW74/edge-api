@@ -53,8 +53,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-@RequestMapping(value = "/api/v1/sensors", produces = MediaType.APPLICATION_JSON_VALUE)
-@Tag(name = "Sensor Management", description = "Operations to manage IoT sensors")
+@RequestMapping(value = "/api/v1/device-datails", produces = MediaType.APPLICATION_JSON_VALUE)
+@Tag(name = "Device Details IoT", description = "Device Details Management Endpoints")
 public class DeviceDetailsController {
     private final DeviceDetailsCommandService deviceDetailsCommandService;
     private final DeviceDetailsQueryService deviceDetailsQueryService;
@@ -199,7 +199,7 @@ public class DeviceDetailsController {
         return ResponseEntity.ok(resource);
     }
 
-    @GetMapping("/readings/history")
+    @GetMapping("/reading-history")
     @Operation(summary = "Get device reading history within a date range")
     @ApiResponse(responseCode = "200", description = "History retrieved successfully")
     @ApiResponse(responseCode = "400", description = "Invalid date range")
@@ -301,7 +301,7 @@ public class DeviceDetailsController {
     @Operation(summary = "Get current trip details for a driver")
     @ApiResponse(responseCode = "200", description = "Trip details retrieved successfully")
     @ApiResponse(responseCode = "404", description = "No trips found for the given driver ID")
-    @GetMapping("/trips/current")
+    @GetMapping("/current/trip")
     public ResponseEntity<TripDetailsResource> getCurrentTripDetails(
             @RequestParam Integer driverId,
             @RequestParam Integer truckId,
@@ -316,7 +316,7 @@ public class DeviceDetailsController {
     @Operation(summary = "Send accumulated sensor readings to Cloud API")
     @ApiResponse(responseCode = "200", description = "Readings sent successfully")
     @ApiResponse(responseCode = "500", description = "Error sending readings")
-    @PostMapping("/data-stream")
+    @PostMapping("/send-data/real-time")
     public ResponseEntity<Void> sendReadings(HttpServletRequest request)  {
         String macAddress = getMacAddressFromToken(request);
         logger.info("Correct device {}", macAddress);
