@@ -53,7 +53,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-@RequestMapping(value = "/api/v1/device-datails", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/device-details", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Device Details IoT", description = "Device Details Management Endpoints")
 public class DeviceDetailsController {
     private final DeviceDetailsCommandService deviceDetailsCommandService;
