@@ -48,7 +48,7 @@ public class DeviceDetails extends AuditableAbstractAggregateRoot<DeviceDetails>
     public void updateReading(SensorReading reading) {
         this.currentReading = reading;
         this.status = determinateHealthStatus(reading);
-        checkThresholds();
+        //checkThresholds();
     }
 
     public void updateThresholds(ThresholdSettings newThresholds) {
