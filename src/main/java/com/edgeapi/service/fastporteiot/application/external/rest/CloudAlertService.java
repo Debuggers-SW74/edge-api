@@ -27,6 +27,11 @@ public class CloudAlertService {
         this.internalApiKey = internalApiKey;
     }
 
+    /**
+     * Envía una alerta al servicio en la nube.
+     *
+     * @param command el comando que contiene los datos de la alerta a enviar.
+     */
     public void sendAlert(CreateAlertCommand command) {
         try {
             // Convertir el comando a un CreateAlertResource
@@ -37,10 +42,12 @@ public class CloudAlertService {
                     command.tripId()
             );
 
+            // Configurar los encabezados de la solicitud HTTP
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("X-Internal-API-Key", internalApiKey);
 
+            // Construir la URL del endpoint de alertas
             String url = cloudApiUrl + "/api/v1/alerts";
 
             log.info("Sending alert to {}", url);
@@ -49,6 +56,7 @@ public class CloudAlertService {
             HttpEntity<CreateAlertResource> requestEntity =
                     new HttpEntity<>(alertResource, headers);
 
+            // Enviar la solicitud HTTP POST al endpoint de alertas
             ResponseEntity<AlertInformationResource> response = restTemplate.exchange(
                     url,
                     HttpMethod.POST,
@@ -56,6 +64,7 @@ public class CloudAlertService {
                     AlertInformationResource.class
             );
 
+            // Verificar si la alerta fue creada exitosamente
             if (response.getStatusCode() == HttpStatus.CREATED) {
                 log.info("Alert created successfully");
             } else {

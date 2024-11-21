@@ -21,6 +21,13 @@ public class CloudTripService {
     private final String cloudApiUrl;
     private final String internalApiKey;
 
+    /**
+     * Constructor para inyectar dependencias y configurar el servicio.
+     *
+     * @param restTemplate instancia de RestTemplate para realizar solicitudes HTTP.
+     * @param cloudApiUrl URL base del servicio en la nube.
+     * @param internalApiKey clave API interna para autenticación.
+     */
     public CloudTripService(
             RestTemplate restTemplate,
             @Value("${iot.cloud.api-url}") String cloudApiUrl,
@@ -31,6 +38,13 @@ public class CloudTripService {
         this.internalApiKey = internalApiKey;
     }
 
+
+    /**
+     * Obtiene los detalles de un viaje desde el servicio en la nube.
+     *
+     * @param command el comando que contiene los datos necesarios para obtener los detalles del viaje.
+     * @return una instancia de TripDetailsResponseCommand con los detalles del viaje.
+     */
     public TripDetailsResponseCommand getTripDetails(GetTripDetailsCommand command) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
